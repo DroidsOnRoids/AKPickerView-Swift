@@ -59,15 +59,19 @@ private class AKCollectionViewCell: UICollectionViewCell {
 	var imageView: UIImageView!
 	var font = UIFont.systemFont(ofSize: UIFont.systemFontSize)
 	var highlightedFont = UIFont.systemFont(ofSize: UIFont.systemFontSize)
-	var _selected: Bool = false {
-		didSet(selected) {
-			let animation = CATransition()
+    var contentViewBackgroundColor = UIColor.clear
+    var contentViewHighlightedBackgroundColor = UIColor.clear
+
+    override var isSelected: Bool {
+        didSet {
+            let animation = CATransition()
             animation.type = .fade
-			animation.duration = 0.15
-			self.label.layer.add(animation, forKey: "")
-			self.label.font = self.isSelected ? self.highlightedFont : self.font
-		}
-	}
+            animation.duration = 0.15
+            self.label.layer.add(animation, forKey: "")
+            self.label.font = self.isSelected ? self.highlightedFont : self.font
+            self.label.backgroundColor = self.isSelected ? self.contentViewHighlightedBackgroundColor : self.contentViewBackgroundColor
+        }
+    }
 
 	func initialize() {
 		self.layer.isDoubleSided = false
@@ -248,6 +252,12 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 
 	/// Readwrite. A color of the text on selected cells.
 	@IBInspectable public lazy var highlightedTextColor: UIColor = UIColor.black
+    
+    /// Readwrite. A color of the background on NOT selected cells.
+    @IBInspectable public lazy var cellBackgroundColor: UIColor = UIColor.clear
+
+    /// Readwrite. A color of the text on selected cells.
+    @IBInspectable public lazy var cellHighlightedBackgroundColor: UIColor = UIColor.clear
 
 	/// Readwrite. A float value which indicates the spacing between cells.
 	@IBInspectable public var interitemSpacing: CGFloat = 0.0
@@ -522,8 +532,10 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 			cell.label.textColor = self.textColor
 			cell.label.highlightedTextColor = self.highlightedTextColor
 			cell.label.font = self.font
-			cell.font = self.font
-			cell.highlightedFont = self.highlightedFont
+            cell.font = self.font
+            cell.highlightedFont = self.highlightedFont
+            cell.contentViewBackgroundColor = self.cellBackgroundColor
+            cell.contentViewHighlightedBackgroundColor = self.cellHighlightedBackgroundColor
 			cell.label.bounds = CGRect(origin: CGPoint.zero, size: self.sizeForString(title as NSString))
 			if let delegate = self.delegate {
 				delegate.pickerView?(self, configureLabel: cell.label, forItem: indexPath.item)
@@ -534,7 +546,9 @@ public class AKPickerView: UIView, UICollectionViewDataSource, UICollectionViewD
 		} else if let image = self.dataSource?.pickerView?(self, imageForItem: indexPath.item) {
 			cell.imageView.image = image
 		}
-		cell._selected = (indexPath.item == self.selectedItem)
+        
+        cell.isSelected = (indexPath.item == self.selectedItem)
+        
 		return cell
 	}
 
